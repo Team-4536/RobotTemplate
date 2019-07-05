@@ -1,19 +1,20 @@
-package src.lib;
+package org.minutebots.lib;
 
+import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.Sendable;
 import edu.wpi.first.wpilibj.SpeedController;
-import edu.wpi.first.wpilibj.Shuffleboard;
-import edy.wpi.first.wpilibj.smartdashboard.SendableBuilder
+import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
 
 public class SmartMotor implements SpeedController, Sendable {
 	private SpeedController controller;
-	private Encoder encoder; 
+	private Encoder encoder;
 	private String name, subsystem;
 	private double max_velocity, P, I, D;
 
 	public SmartMotor(SpeedController controller, Encoder encoder) {
-		throw new Error("Motor instantiated without PIDF values");
 		this(controller, encoder, "", 0.0, 0.0, 0.0, 0.0);
+		throw new Error("Motor instantiated without PIDF values");
 	}
 	
 	public SmartMotor(SpeedController controller, Encoder encoder, double max_velocity, double P, double I, double D) {
@@ -28,23 +29,20 @@ public class SmartMotor implements SpeedController, Sendable {
 		this.P = P;
 		this.I = I;
 		this.D = D;
-
-		Shuffleboard.add(((this.name.isEmpty()) ? "Smart Motor" : this.name) + " ", this.controller);
 	}
 
-	@Override
 	public double getVelocity() {
 		return encoder.getRate();
-
+	}
 	
 	@Override
 	public void set(double speed) {
-		controller.setSpeed(speed);
+		controller.set(speed);
 	}
 
 	@Override
 	public void setInverted(boolean isInverted) {
-		controller.inverted = isInverted;	
+		controller.setInverted(isInverted);
 	}
 
 	@Override 
@@ -54,18 +52,18 @@ public class SmartMotor implements SpeedController, Sendable {
 
 	@Override
 	public void disable() {
-		controller.inverted = false;
-		controller.setSpeed(0);
+		controller.setInverted(false);
+		controller.set(0);
 	}
 
 	@Override
 	public double get() {
-		return controller.getSpeed();
+		return controller.get();
 	}
 
 	@Override
 	public void stopMotor() {
-		controller.setSpeed(0);
+		controller.stopMotor();
 	}
 
 	@Override
@@ -80,13 +78,18 @@ public class SmartMotor implements SpeedController, Sendable {
 
 	@Override
 	public void pidWrite(double output) {
-		controller.setSpeed(output);
+		controller.set(output);
 	}
 
 	@Override
 	public void setName(String subsystem, String name) {
 		this.subsystem = subsystem;
 		this.name = name;
+	}
+
+	@Override
+	public String getSubsystem() {
+		return subsystem;
 	}
 
 	@Override
@@ -99,7 +102,7 @@ public class SmartMotor implements SpeedController, Sendable {
 		builder.setSmartDashboardType("Speed Controller");
 		builder.setActuator(true);
 		builder.setSafeState(this::disable);
-		builder.addDoubleProperty("Value", this::controller.get, this::controller.set); 
+		builder.addDoubleProperty("Value", controller::get, controller::set);
 	}
 
 	public double getFeedForward(double velocity) {
@@ -108,10 +111,10 @@ public class SmartMotor implements SpeedController, Sendable {
 
 	public PIDController VelocityToPID(double velocity) {
 		double F = getFeedForward(velocity); 
-		return PIDController(P, I, D, F, encoder, controller);
+		return new PIDController(P, I, D, F, encoder, controller);
 	}
 
 	public PIDController CustomPID(double kP, double kI, double kD, double kF) {
-		return PIDController(kP, kI, kD, kF, encoder, controller);
+		return new PIDController(kP, kI, kD, kF, encoder, controller);
 	}
 }
