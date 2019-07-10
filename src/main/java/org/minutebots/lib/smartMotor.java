@@ -11,17 +11,22 @@ public class SmartMotor implements SpeedController, Sendable {
 	private Encoder encoder;
 	private String name, subsystem;
 	private double max_velocity, P, I, D;
+	private double rateConstant;
 
 	public SmartMotor(SpeedController controller, Encoder encoder) {
-		this(controller, encoder, "", 0.0, 0.0, 0.0, 0.0);
+		this(controller, encoder, "", 0.0, 0.0, 0.0, 0.0, 1);
 		throw new Error("Motor instantiated without PIDF values");
 	}
 	
 	public SmartMotor(SpeedController controller, Encoder encoder, double max_velocity, double P, double I, double D) {
-		this(controller, encoder, "", max_velocity, P, I, D);
+		this(controller, encoder, "", max_velocity, P, I, D,1);
 	}
 
-	public SmartMotor(SpeedController controller, Encoder encoder, String name, double max_velocity, double P, double I, double D) {
+	public SmartMotor(SpeedController controller, Encoder encoder, double max_velocity, double P, double I, double D, double rateConstant) {
+		this(controller, encoder, "", max_velocity, P, I, D,rateConstant);
+	}
+
+	public SmartMotor(SpeedController controller, Encoder encoder, String name, double max_velocity, double P, double I, double D, double rateConstant) {
 		this.max_velocity = max_velocity; 	
 		this.controller = controller;
 		this.encoder = encoder;
@@ -29,11 +34,14 @@ public class SmartMotor implements SpeedController, Sendable {
 		this.P = P;
 		this.I = I;
 		this.D = D;
+		this.rateConstant = rateConstant;
 	}
 
-	public double getVelocity() {
+	public double getRawVelocity() {
 		return encoder.getRate();
 	}
+
+	public double getVelocity() { return rateConstant * encoder.getRate(); }
 	
 	@Override
 	public void set(double speed) {
