@@ -17,8 +17,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
  * project.
  */
 public class Robot extends TimedRobot {
-
-  this code is broken, if this compiles then THATS BAD
+  
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
